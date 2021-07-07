@@ -10,16 +10,17 @@
 ## Build
 
 ```bash
-docker build -t imm-ros . # -f Dockerfile
+docker build -t imm-ros .
 ```
 
 ## Run
 
 ```bash
-docker run --network host -it imm-ros /bin/bash
+./ros-docker.sh
 ```
 
 # Reference
 
 * [ROS Guide](http://wiki.ros.org/docker/Tutorials/Docker): official guide
 * [Blog Post: Docker-And-Ros](https://roboticseabass.com/2021/04/21/docker-and-ros/)
+* [Using GUI's with Docker](http://wiki.ros.org/docker/Tutorials/GUI)
