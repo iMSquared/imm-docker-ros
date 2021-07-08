@@ -7,8 +7,12 @@ ARG BASE_IMAGE=osrf/ros:melodic-desktop-full
 ARG UID=1000
 ARG GID=1000
 
-ENV USERNAME=user
 FROM ${BASE_IMAGE}
+
+ENV USERNAME=user
+# NOTE(ycho): Re-declare `ARG` for visibility.
+ARG UID
+ARG GID
 
 # Install packages
 RUN apt-get update && apt-get install -y \
@@ -24,8 +28,8 @@ RUN apt-get update && apt-get install -y \
 # Setup GUI access enabled user.
 # FIXME(ycho): Perhaps unnecessary since we need to run with
 # --privileged option anyways (for network access).
-RUN useradd -m ${USERNAME} && \
-    usermod -s /bin/bash ${USERNAME} && \
+RUN echo "useradd -m -s /bin/bash ${USERNAME}"
+RUN useradd -m -s /bin/bash ${USERNAME} && \
     usermod -aG sudo ${USERNAME} && \
     echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers.d/${USERNAME} && \
     chmod 440 /etc/sudoers.d/${USERNAME} && \
@@ -45,8 +49,3 @@ RUN . /opt/ros/melodic/setup.bash && \
     catkin_make
 RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc && \
     source ~/.bashrc
-
-# Add robot hostname resolution
-# TODO(ycho): hardcoded ip / hostname. Would this work?
-# Alternatively, can we intelligently figure this out on entry_point.sh?
-RUN echo '137.68.198.113 SXLS0-201214AB' >> /etc/hosts
