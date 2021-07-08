@@ -14,9 +14,13 @@ find_robot(){
 set_network(){
     # FIXME(ycho): Pretty fragile
     MY_IP="$(hostname -I | awk '{print $1}')"
-    export ROBOT_IP="$(find_robot)"
-    export ROS_MASTER_URI="http://${ROBOT_IP}:11311"
     export ROS_IP="${MY_IP}"
+    export ROBOT_IP="$(find_robot)"
+    if [ -z "${ROBOT_IP}" ]; then
+        echo 'ROBOT NOT FOUND! Fallback to HOST IP'
+        export ROBOT_IP="${MY_IP}"
+    fi
+    export ROS_MASTER_URI="http://${ROBOT_IP}:11311"
 }
 
 set_network
