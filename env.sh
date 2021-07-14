@@ -7,7 +7,7 @@ find_robot(){
     # FIXME(ycho): Hardcoded robot mac address...
     ROBOT_MAC_ADDR='34:13:e8:cf:96:df'
     WIFI_DEVICE="$(iw dev | awk '$1=="Interface"{print $2}')"
-    ROBOT_IP="$(sudo arp-scan --interface=wlp0s20f3 --localnet | grep 34:13:e8:cf:96:df | awk '{print $1}')"
+    ROBOT_IP="$(sudo arp-scan --interface=$WIFI_DEVICE --localnet | grep 34:13:e8:cf:96:df | awk '{print $1}')"
     echo ${ROBOT_IP}
 }
 
