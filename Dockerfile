@@ -51,7 +51,7 @@ RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc && \
     source ~/.bashrc
 
 # TODO(ycho):
-# sudo apt install ros-melodic-libpcan # required for building with robotnik_base_hw_lib
+# sudo apt-get install ros-melodic-libpcan # required for building with robotnik_base_hw_lib
 # RUN sudo dpkg -i ros-melodic-robotnik-base-hw-lib_1.0.0-0bionic_amd64.deb ros-melodic-robotnik-msgs_1.0.0-0bionic_amd64.deb 
 # whitelist libbw_ce30v2.0.so from .gitignore (for now, replace with fork OR self-hosted .zip from official repo)
 # rosdep install libpcan
@@ -62,7 +62,7 @@ RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc && \
 # some combination of the above works. My guess is rosdep/rosmake doesn't do much.
 
 # Clone our workspace and build.
-# RUN pushd src && git clone imsquared/imm-summit-packages && popd
-# RUN sudo apt update
+RUN apt-get update
+RUN pushd src && git clone https://github.com/imsquared/imm-summit-packages.git && popd
 # RUN rosdep install --from-paths src --ignore-src -y --skip-keys='robotnik_base_hw_lib' --skip-keys='robotnik_pose_filter' --skip-keys='robotnik_locator'
 # RUN catkin_make
