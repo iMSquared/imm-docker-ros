@@ -50,19 +50,35 @@ RUN . /opt/ros/melodic/setup.bash && \
 RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc && \
     source ~/.bashrc
 
-# TODO(ycho):
-# sudo apt-get install ros-melodic-libpcan # required for building with robotnik_base_hw_lib
+# required for building with robotnik_base_hw_lib
+# RUN sudo apt-get install ros-melodic-libpcan
 # RUN sudo dpkg -i ros-melodic-robotnik-base-hw-lib_1.0.0-0bionic_amd64.deb ros-melodic-robotnik-msgs_1.0.0-0bionic_amd64.deb 
-# whitelist libbw_ce30v2.0.so from .gitignore (for now, replace with fork OR self-hosted .zip from official repo)
-# rosdep install libpcan
-# rosmake libpcan
+RUN rosdep update
 # OR, add <build_depend>libpcan</build_depend> in robotnik*/package.xml
 # and CATKIN_FIND_PACKAGE(... libpcan)
 # and INCLUDE_DIRECTORIES(... "/opt/ros/melodic/include/libpcan/")
 # some combination of the above works. My guess is rosdep/rosmake doesn't do much.
 
-# Clone our workspace and build.
-RUN apt-get update
-RUN pushd src && git clone https://github.com/imsquared/imm-summit-packages.git && popd
+# Clone our workspace.
+RUN cd ~/catkin_ws/src && \
+    git clone https://github.com/imsquared/imm-summit-packages.git --depth 1 -b full
+
+# Build ...
 # RUN rosdep install --from-paths src --ignore-src -y --skip-keys='robotnik_base_hw_lib' --skip-keys='robotnik_pose_filter' --skip-keys='robotnik_locator'
-# RUN catkin_make
+RUN sudo apt-get update && sudo apt-get install -y \
+    ros-melodic-libpcan
+# NOTE(ycho): Not directly running install_debs.sh since it doesn't include proper cli flags.
+RUN sudo apt-get install -y libgazebo9-dev ros-melodic-gazebo-dev
+RUN cd ~/catkin_ws/src/imm-summit-packages/deb && \
+    sudo apt-get update && \
+    sudo apt-get install -y \
+    $(cat ./install_debs.sh | grep deb$ | awk '{print "./"$4}' | grep -v 'melodic-gazebo') \
+    && rm -rf /var/lib.apt/lists/*
+# RUN rosdep install libpcan && rosmake libpcan
+RUN cd ~/catkin_ws && rosdep install --from-paths src --ignore-src -y \
+    --skip-keys='robotnik_base_hw_lib' \
+    --skip-keys='robotnik_pose_filter' \
+    --skip-keys='robotnik_locator'
+RUN . /opt/ros/melodic/setup.bash && \
+    cd ~/catkin_ws && \
+    catkin_make
