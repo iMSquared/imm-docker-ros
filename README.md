@@ -9,6 +9,14 @@
 
 ## Build
 
+### Credentials
+
+First, download `id_imm_ed25519` SSH Deployment key from [GDrive](https://drive.google.com/drive/folders/1PyoVKkke-fzMba-0kxxfc8ILP0Klw6QB).
+
+Then, place the file under `.ssh/id_imm_ed25519`. This is required for cloning the repository during the docker image build.
+
+### Build Docker Image
+
 ```bash
 docker build -t imm-ros .
 ```

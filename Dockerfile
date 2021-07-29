@@ -7,6 +7,34 @@ ARG BASE_IMAGE=osrf/ros:melodic-desktop-full
 ARG UID=1000
 ARG GID=1000
 
+# === STAGE 1 : Clone Workspace from Git ===
+FROM ubuntu:20.04 AS clone-repo
+LABEL maintainer="yoonyoung.cho@kaist.ac.kr"
+
+# Install Git, SSH
+RUN apt-get update &&\
+    apt-get install -y --no-install-recommends \
+    git \
+    ssh \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create credentials dir
+RUN mkdir -p -m 0600 /root/.ssh \
+    && ssh-keyscan github.com >> /root/.ssh/known_hosts
+
+# Copy credentials.
+# FIXME(ycho): Consider automating this key config. step.
+ADD .ssh/id_imm_ed25519 /root/.ssh/id_imm_ed25519
+ADD .ssh/config /root/.ssh/config
+
+RUN eval "$(ssh-agent -s)" && \
+    ssh-add /root/.ssh/id_imm_ed25519
+
+# Clone.
+RUN git clone git@github.com:iMSquared/imm-summit-packages.git --depth 1 -b full \
+    /tmp/imm-summit-packages
+
+# === STAGE 2 : Dev Env. Setup ===
 FROM ${BASE_IMAGE}
 
 ENV USERNAME=user
@@ -59,9 +87,10 @@ RUN rosdep update
 # and INCLUDE_DIRECTORIES(... "/opt/ros/melodic/include/libpcan/")
 # some combination of the above works. My guess is rosdep/rosmake doesn't do much.
 
-# Clone our workspace.
-RUN cd ~/catkin_ws/src && \
-    git clone https://github.com/imsquared/imm-summit-packages.git --depth 1 -b full
+# Copy workspace from previous build stage.
+COPY --from=clone-repo \
+    /tmp/imm-summit-packages/ \
+    /home/${USERNAME}/catkin_ws/src/imm-summit-packages/
 
 # Build ...
 # RUN rosdep install --from-paths src --ignore-src -y --skip-keys='robotnik_base_hw_lib' --skip-keys='robotnik_pose_filter' --skip-keys='robotnik_locator'
