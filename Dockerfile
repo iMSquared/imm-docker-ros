@@ -76,6 +76,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
     ros-melodic-libpcan
 
 # NOTE(ycho): Not directly running install_debs.sh since it doesn't include proper cli flags.
+# FIXME(ycho): Monkey-patched gazebo dependencies, will not work!!!
 RUN sudo apt-get install -y libgazebo9-dev ros-melodic-gazebo-dev
 RUN cd ~/catkin_ws/src/imm-summit-packages/deb && \
     sudo apt-get update && \
