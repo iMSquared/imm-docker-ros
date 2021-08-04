@@ -9,19 +9,13 @@
 
 ## Build
 
-### Credentials
-
-First, download `id_imm_ed25519` SSH Deployment key from [GDrive](https://drive.google.com/drive/folders/1PyoVKkke-fzMba-0kxxfc8ILP0Klw6QB).
-
-Then, place the file under `.ssh/id_imm_ed25519`. This is required for cloning the repository during the docker image build.
-
 ### Build Docker Image
 
 ```bash
-docker build -t imm-ros .
+./build.sh
 ```
 
-## Run
+## Run ROS-enabled container
 
 ```bash
 ./ros-docker.sh
@@ -32,3 +26,4 @@ docker build -t imm-ros .
 * [ROS Guide](http://wiki.ros.org/docker/Tutorials/Docker): official guide
 * [Blog Post: Docker-And-Ros](https://roboticseabass.com/2021/04/21/docker-and-ros/)
 * [Using GUI's with Docker](http://wiki.ros.org/docker/Tutorials/GUI)
+* [Private Git Repo with Docker](https://vsupalov.com/better-docker-private-git-ssh/)
