@@ -21,6 +21,19 @@
 ./ros-docker.sh
 ```
 
+## Running Gazebo simulation
+
+```bash
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ros-${ROS_DISTRO}-*-controllers \
+    ros-${ROS_DISTRO}-gazebo-ros-control \
+    && rm -rf /...
+
+RUN mkdir -p ~/.gazebo && \
+    git clone https://github.com/osrf/gazebo_models.git -depth 1 ~/.gazebo/models
+```
+
 # Reference
 
 * [ROS Guide](http://wiki.ros.org/docker/Tutorials/Docker): official guide

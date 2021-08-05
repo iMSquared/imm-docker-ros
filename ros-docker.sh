@@ -18,4 +18,5 @@ docker run -it --rm \
     --device=/dev/dri:/dev/dri \
     --add-host="SXLS0-201214AB:${ROBOT_IP}" \
     --privileged \
-    imm-ros
+    --gpus all \
+    imm-ros:gpu
