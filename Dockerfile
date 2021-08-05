@@ -14,14 +14,19 @@ ENV USERNAME=user
 ARG UID
 ARG GID
 
-# Install packages
-RUN apt-get update && apt-get install -y \
+# Install dev packages.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     tmux \
     ssh \
     vim \
     iputils-ping \
     net-tools \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install ROS packages.
+RUN apt-get update && apt-get install -y --no-install-recommends \
     ros-melodic-moveit \
+    ros-melodic-libpcan \
     python-catkin-tools \
     && rm -rf /var/lib/apt/lists/*
 
@@ -35,7 +40,7 @@ RUN useradd -m -s /bin/bash ${USERNAME} && \
     usermod -g ${GID} ${USERNAME}
 
 # NOTE(ycho): As the root user, mount host ssh and clone our packages into `tmp`.
-RUN --mount=type=ssh mkdir -p -m 0600 "/root/.ssh" \
+RUN mkdir -p -m 0600 "/root/.ssh" \
     && ssh-keyscan github.com | sudo tee -a "/root/.ssh/known_hosts"
 RUN --mount=type=ssh git clone git@github.com:iMSquared/imm-summit-packages.git --depth 1 -b full \
     "/tmp/imm-summit-packages/"
@@ -45,18 +50,16 @@ WORKDIR /home/${USERNAME}
 
 # Setup ROS + initialize empty catkin workspace
 SHELL ["/bin/bash", "-c"]
-RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc && \
-    source ~/.bashrc
+RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+RUN echo "${PATH}"
 RUN . /opt/ros/melodic/setup.bash && \
     mkdir -p ~/catkin_ws/src && \
     cd ~/catkin_ws && \
-    catkin_make
-RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc && \
-    source ~/.bashrc
+    catkin init && \
+    catkin build
+RUN echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
 
-# required for building with robotnik_base_hw_lib
-# RUN sudo apt-get install ros-melodic-libpcan
-# RUN sudo dpkg -i ros-melodic-robotnik-base-hw-lib_1.0.0-0bionic_amd64.deb ros-melodic-robotnik-msgs_1.0.0-0bionic_amd64.deb 
+# Required for building with robotnik_base_hw_lib
 RUN rosdep update
 
 # NOTE(ycho): --mount=type=ssh,uid=${UID} doesn't work
@@ -72,12 +75,14 @@ RUN sudo chown ${USERNAME} -R /tmp/imm-summit-packages && \
 
 # Build ...
 # RUN rosdep install --from-paths src --ignore-src -y --skip-keys='robotnik_base_hw_lib' --skip-keys='robotnik_pose_filter' --skip-keys='robotnik_locator'
-RUN sudo apt-get update && sudo apt-get install -y \
-    ros-melodic-libpcan
 
 # NOTE(ycho): Not directly running install_debs.sh since it doesn't include proper cli flags.
 # FIXME(ycho): Monkey-patched gazebo dependencies, will not work!!!
-RUN sudo apt-get install -y libgazebo9-dev ros-melodic-gazebo-dev
+RUN sudo apt-get update && \
+    sudo apt-get install -y --no-install-recommends \
+    libgazebo9-dev \
+    ros-melodic-gazebo-dev
+
 RUN cd ~/catkin_ws/src/imm-summit-packages/deb && \
     sudo apt-get update && \
     sudo apt-get install -y \
@@ -90,5 +95,7 @@ RUN cd ~/catkin_ws && rosdep install --from-paths src --ignore-src -y \
     --skip-keys='robotnik_pose_filter' \
     --skip-keys='robotnik_locator'
 RUN . /opt/ros/melodic/setup.bash && \
+    . ~/catkin_ws/devel/setup.bash && \
     cd ~/catkin_ws && \
-    catkin_make
+    catkin build
+ENTRYPOINT ["/bin/bash"]
